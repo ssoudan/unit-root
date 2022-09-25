@@ -127,7 +127,7 @@ mod tests {
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);
-        let report = constant_no_trend_test(&y.into_owned());
+        let report = constant_no_trend_test(&y);
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
@@ -146,7 +146,7 @@ mod tests {
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);
-        let report = constant_no_trend_test(&y.into_owned());
+        let report = constant_no_trend_test(&y);
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 

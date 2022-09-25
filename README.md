@@ -29,7 +29,7 @@ fn main() {
     ]);
 
     // compute the test statistic
-    let report = tools::univariate_dickeyfuller(&y);
+    let report = tools::dickeyfuller::constant_no_trend_test(&y);
     
     // critical values for model 1 (constant but no trend):
     let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
