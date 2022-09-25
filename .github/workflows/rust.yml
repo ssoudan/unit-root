@@ -82,3 +82,21 @@ jobs:
       with:
         command: build
         args: --release --all-features --all-targets
+  benches:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install lld
+        run: sudo apt-get update && sudo apt-get install -y lld wget unzip
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - uses: actions/checkout@v2
+      - name: Bench
+        uses: actions-rs/cargo@v1
+        with:
+          command: bench
+          args: --all --features=unstable

@@ -45,7 +45,7 @@ pub struct Report {
 /// # Examples:
 ///
 /// ```rust
-/// use unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value;
+/// use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
 /// use unit_root::prelude::distrib::AlphaLevel;
 /// use unit_root::prelude::nalgebra::DVector;
 /// use unit_root::prelude::*;
@@ -64,9 +64,9 @@ pub struct Report {
 ///     -0.42968979,
 /// ]);
 ///
-/// let report = tools::univariate_dickeyfuller(&y);
+/// let report = tools::dickeyfuller::constant_no_trend_test(&y);
 ///
-/// let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
+/// let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 /// assert_eq!(report.size, 10);
 ///
 /// let t_stat = report.test_statistic.unwrap();
@@ -74,10 +74,10 @@ pub struct Report {
 /// assert!((t_stat - -1.472691).abs() < 1e-6);
 /// assert!(t_stat > critical_value);
 /// ```
-pub fn univariate_dickeyfuller(series: &DVector<f64>) -> Report {
+pub fn constant_no_trend_test(series: &DVector<f64>) -> Report {
     let (delta_y, y_t_1, size) = diff(series);
 
-    let (_betas, t_stats) = ols(delta_y, y_t_1).unwrap();
+    let (_betas, t_stats) = ols(&delta_y, &y_t_1).unwrap();
 
     let t_stat_beta_1 = t_stats[1];
 
@@ -109,34 +109,13 @@ fn diff(y: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>, usize) {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::DVector;
     use rand::prelude::*;
     use rand_chacha::ChaCha8Rng;
-    use rand_distr::StandardNormal;
 
     use super::*;
-    use crate::distrib::dickeyfuller::model_1_approx_critical_value;
+    use crate::distrib::dickeyfuller::constant_no_trend_critical_value;
     use crate::distrib::AlphaLevel;
-
-    fn gen_ar_1<R: Rng + ?Sized>(
-        mut rng: &mut R,
-        size: usize,
-        mu: f64,
-        delta: f64,
-        sigma: f64,
-    ) -> DVector<f64> {
-        let mut y = DVector::zeros(size);
-
-        let epsilon: f64 = StandardNormal.sample(&mut rng);
-        y[0] = mu + delta * 0.0 + sigma * epsilon;
-
-        for i in 1..size {
-            let epsilon: f64 = StandardNormal.sample(&mut rng);
-            y[i] = mu + delta * y[i - 1] + sigma * epsilon;
-        }
-
-        y
-    }
+    use crate::utils::gen_ar_1;
 
     #[test]
     fn test_dickeyfuller_no_unit_root() {
@@ -148,9 +127,9 @@ mod tests {
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);
-        let report = univariate_dickeyfuller(&y.into_owned());
+        let report = constant_no_trend_test(&y.into_owned());
 
-        let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
+        let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
         assert!(report.test_statistic.is_some());
         let t_stat = report.test_statistic.unwrap();
@@ -167,9 +146,9 @@ mod tests {
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);
-        let report = univariate_dickeyfuller(&y.into_owned());
+        let report = constant_no_trend_test(&y.into_owned());
 
-        let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
+        let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
         assert!(report.test_statistic.is_some());
         let t_stat = report.test_statistic.unwrap();

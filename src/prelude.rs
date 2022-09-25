@@ -25,14 +25,17 @@ pub use crate::Error;
 
 /// Tools
 pub mod tools {
-    pub use crate::tools::dickeyfuller::univariate_dickeyfuller;
+    /// Dickey-Fuller test
+    pub mod dickeyfuller {
+        pub use crate::tools::dickeyfuller::constant_no_trend_test;
+    }
 }
 
 /// Distributions
 pub mod distrib {
     /// Dickey-Fuller distribution
     pub mod dickeyfuller {
-        pub use crate::distrib::dickeyfuller::model_1_approx_critical_value;
+        pub use crate::distrib::dickeyfuller::constant_no_trend_critical_value;
     }
     pub use crate::distrib::AlphaLevel;
 }

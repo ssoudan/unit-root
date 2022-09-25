@@ -15,9 +15,9 @@
 use super::AlphaLevel;
 
 /// Approximate Dickey-Fuller distribution for specific alpha levels
-/// for model 1 (constant, no trend): $Δy_i = β_0 + β_1*y_{i-1} + ε_i$
+/// for constant, no trend: $Δy_i = β_0 + β_1*y_{i-1} + ε_i$
 /// https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
-pub fn model_1_approx_critical_value(sz: usize, alpha: AlphaLevel) -> f64 {
+pub fn constant_no_trend_critical_value(sz: usize, alpha: AlphaLevel) -> f64 {
     let (t, u, v, w) = match alpha {
         AlphaLevel::OnePercent => (-3.43035, -6.5393, -16.786, -79.433),
         AlphaLevel::TwoPointFivePercent => (-3.1175, -4.53235, -9.8824, -57.7669),
@@ -37,22 +37,22 @@ mod tests {
     #[test]
     fn test_model_1_critical_approx_value_25() {
         assert_relative_eq!(
-            model_1_approx_critical_value(25, AlphaLevel::OnePercent),
+            constant_no_trend_critical_value(25, AlphaLevel::OnePercent),
             -3.724,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(25, AlphaLevel::TwoPointFivePercent),
+            constant_no_trend_critical_value(25, AlphaLevel::TwoPointFivePercent),
             -3.318,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(25, AlphaLevel::FivePercent),
+            constant_no_trend_critical_value(25, AlphaLevel::FivePercent),
             -2.986,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(25, AlphaLevel::TenPercent),
+            constant_no_trend_critical_value(25, AlphaLevel::TenPercent),
             -2.633,
             epsilon = 1e-3
         );
@@ -61,22 +61,22 @@ mod tests {
     #[test]
     fn test_model_1_critical_approx_value_100() {
         assert_relative_eq!(
-            model_1_approx_critical_value(100, AlphaLevel::OnePercent),
+            constant_no_trend_critical_value(100, AlphaLevel::OnePercent),
             -3.498,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(100, AlphaLevel::TwoPointFivePercent),
+            constant_no_trend_critical_value(100, AlphaLevel::TwoPointFivePercent),
             -3.164,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(100, AlphaLevel::FivePercent),
+            constant_no_trend_critical_value(100, AlphaLevel::FivePercent),
             -2.891,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(100, AlphaLevel::TenPercent),
+            constant_no_trend_critical_value(100, AlphaLevel::TenPercent),
             -2.582,
             epsilon = 1e-3
         );
@@ -85,22 +85,22 @@ mod tests {
     #[test]
     fn test_model_1_critical_approx_value_500() {
         assert_relative_eq!(
-            model_1_approx_critical_value(500, AlphaLevel::OnePercent),
+            constant_no_trend_critical_value(500, AlphaLevel::OnePercent),
             -3.443,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(500, AlphaLevel::TwoPointFivePercent),
+            constant_no_trend_critical_value(500, AlphaLevel::TwoPointFivePercent),
             -3.127,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(500, AlphaLevel::FivePercent),
+            constant_no_trend_critical_value(500, AlphaLevel::FivePercent),
             -2.867,
             epsilon = 1e-3
         );
         assert_relative_eq!(
-            model_1_approx_critical_value(500, AlphaLevel::TenPercent),
+            constant_no_trend_critical_value(500, AlphaLevel::TenPercent),
             -2.570,
             epsilon = 1e-3
         );

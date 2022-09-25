@@ -17,7 +17,7 @@
 //! # Examples
 //!
 //! ```rust
-//! use unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value;
+//! use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
 //! use unit_root::prelude::distrib::AlphaLevel;
 //! use unit_root::prelude::nalgebra::DVector;
 //! use unit_root::prelude::*;
@@ -36,9 +36,9 @@
 //!     -0.42968979,
 //! ]);
 //!
-//! let report = tools::univariate_dickeyfuller(&y);
+//! let report = tools::dickeyfuller::constant_no_trend_test(&y);
 //!
-//! let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
+//! let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 //! assert_eq!(report.size, 10);
 //!
 //! let t_stat = report.test_statistic.unwrap();
@@ -57,11 +57,21 @@
 use thiserror::Error;
 
 pub(crate) mod distrib;
-pub(crate) mod regression;
 pub(crate) mod tools;
 
 /// The public API.
 pub mod prelude;
+
+#[cfg(any(feature = "unstable", test))]
+/// unstable utils API
+pub mod utils;
+
+#[cfg(any(feature = "unstable", test))]
+/// unstable regression API
+pub mod regression;
+
+#[cfg(not(any(feature = "unstable", test)))]
+pub(crate) mod regression;
 
 /// The error type for this crate.
 #[derive(Debug, Clone, Error)]

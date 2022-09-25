@@ -18,7 +18,7 @@ use crate::prelude::Error;
 
 /// Returns the beta coefficients and t-statistics of the OLS regression of y on x.
 /// Note: the intercept is the first coefficient.
-pub(crate) fn ols(y: DVector<f64>, x: DMatrix<f64>) -> Result<(DVector<f64>, DVector<f64>), Error> {
+pub fn ols(y: &DVector<f64>, x: &DMatrix<f64>) -> Result<(DVector<f64>, DVector<f64>), Error> {
     // Augment X with a column of 1s for the intercept - in first column
     let a = x.clone();
     let a = a.insert_column(0, 1.0);
@@ -26,15 +26,16 @@ pub(crate) fn ols(y: DVector<f64>, x: DMatrix<f64>) -> Result<(DVector<f64>, DVe
     let n = x.nrows();
     let k = a.ncols();
 
+    let at = &a.transpose();
     // beta = (A'A)^-1 A'y
-    let ata = (&a.transpose() * &a).into_owned();
+    let ata = at * &a;
     let ata_inv = &ata
         .try_inverse()
         .ok_or_else(|| Error::FailedToInvertMatrix("OLS failed to invert A.T*A".into()))?;
-    let aty = (&a.transpose() * &y).into_owned();
+    let aty = at * y;
 
     // the regression coefficients
-    let beta_ = ((ata_inv) * aty).into_owned();
+    let beta_ = ata_inv * aty;
 
     // the predicted values
     let y_hat = a * &beta_;
@@ -42,7 +43,7 @@ pub(crate) fn ols(y: DVector<f64>, x: DMatrix<f64>) -> Result<(DVector<f64>, DVe
     // the residuals
     let residuals = y - y_hat;
 
-    let rtr = residuals.transpose() * residuals;
+    let rtr = &residuals.transpose() * &residuals;
     let rtr = rtr.get((0, 0)).unwrap();
 
     // The variance of the residuals
@@ -60,14 +61,18 @@ pub(crate) fn ols(y: DVector<f64>, x: DMatrix<f64>) -> Result<(DVector<f64>, DVe
 mod tests {
     use approx::assert_relative_eq;
     use nalgebra::{DMatrix, DVector};
-    use rand::prelude::*;
-    use rand_distr::StandardNormal;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
+    use crate::utils::{gen_affine_data, gen_affine_data_with_whitenoise};
 
     #[test]
     fn test_ols() {
         let y = DVector::from_row_slice(&[1.0, 2.0, 3.0, 4.0, 5.0]);
         let x = DMatrix::from_row_slice(5, 1, &[1.0, 2.0, 3.0, 4.0, 5.0]);
-        let (beta_hat, t_stats) = super::ols(y, x).unwrap();
+
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
+
         assert_eq!(beta_hat.get(0).unwrap().to_owned(), 0.0);
         assert_eq!(beta_hat.get(1).unwrap().to_owned(), 1.0);
         assert!(t_stats.get(0).unwrap().is_nan());
@@ -81,19 +86,9 @@ mod tests {
         let mu = 4.0;
         let beta = 12.;
 
-        let x = DVector::from_row_slice(
-            Vec::from_iter(0..sz)
-                .into_iter()
-                .map(|x| x as f64)
-                .collect::<Vec<f64>>()
-                .as_slice(),
-        );
+        let (x, y) = gen_affine_data(sz, mu, beta);
 
-        let y: DVector<f64> = beta * x.clone();
-        let y = y.add_scalar(mu);
-        let x: DMatrix<f64> = DMatrix::from_row_slice(sz, 1, x.as_slice());
-
-        let (beta_hat, t_stats) = super::ols(y, x).unwrap();
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
         let mu_hat = beta_hat.get(0).unwrap().to_owned();
         let beta_hat = beta_hat.get(1).unwrap().to_owned();
 
@@ -114,28 +109,16 @@ mod tests {
         let mu = 43.0;
         let beta = 2.;
 
-        let x = DMatrix::from_row_slice(
-            sz,
-            1,
-            Vec::from_iter(0..sz)
-                .into_iter()
-                .map(|x| x as f64)
-                .collect::<Vec<f64>>()
-                .as_slice(),
-        );
-        let y = beta * x.clone();
+        let mut rng = ChaCha8Rng::seed_from_u64(42);
 
-        let mut rng = rand::thread_rng();
+        let (x, y) = gen_affine_data_with_whitenoise(&mut rng, sz, mu, beta);
 
-        let noise = DVector::from_iterator(sz, StandardNormal.sample_iter(&mut rng).take(sz));
-        let y = (y + noise).add_scalar(mu);
-
-        let (beta_hat, t_stats) = super::ols(y, x).unwrap();
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
         let mu_hat = beta_hat.get(0).unwrap().to_owned();
         let beta_hat = beta_hat.get(1).unwrap().to_owned();
 
-        println!("mu_hat: {}", mu_hat);
-        println!("beta_hat: {}", beta_hat);
+        // println!("mu_hat: {}", mu_hat);
+        // println!("beta_hat: {}", beta_hat);
 
         assert_relative_eq!(mu_hat, mu, epsilon = 2.);
         assert_relative_eq!(beta_hat, beta, epsilon = 0.5);

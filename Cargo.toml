@@ -17,12 +17,29 @@ exclude = [
     "/.gitignore",
 ]
 
+[features]
+default = []
+unstable = [ "rand", "rand_distr"]
+
+[[bench]]
+name = "ols"
+harness = false
+required-features = [ "unstable" ]
+
+[[bench]]
+name = "dickeyfuller"
+harness = false
+required-features = [ "unstable" ]
+
 [dependencies]
 nalgebra = "0"
 thiserror = "1"
+rand = { version = "0", optional = true }
+rand_distr = { version = "0", optional = true }
 
 [dev-dependencies]
 rand = "0"
 rand_distr = "0"
 approx = "0"
 rand_chacha = "0"
+criterion = "0"
