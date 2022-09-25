@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, RealField, Scalar};
+use num_traits::Float;
 
 use crate::prelude::nalgebra::DVector;
 use crate::regression::ols;
 
 /// Univariate Dickey-Fuller test report
-pub struct Report {
+pub struct Report<F> {
     /// The test statistic - when available
-    pub test_statistic: Option<f64>,
+    pub test_statistic: Option<F>,
     /// The size of the sample
     pub size: usize,
 }
@@ -71,10 +72,10 @@ pub struct Report {
 ///
 /// let t_stat = report.test_statistic.unwrap();
 /// println!("t-statistic: {}", t_stat);
-/// assert!((t_stat - -1.472691).abs() < 1e-6);
+/// assert!((t_stat - -1.472691f64).abs() < 1e-6);
 /// assert!(t_stat > critical_value);
 /// ```
-pub fn constant_no_trend_test(series: &DVector<f64>) -> Report {
+pub fn constant_no_trend_test<F: Float + Scalar + RealField>(series: &DVector<F>) -> Report<F> {
     let (delta_y, y_t_1, size) = diff(series);
 
     let (_betas, t_stats) = ols(&delta_y, &y_t_1).unwrap();
@@ -95,14 +96,14 @@ pub fn constant_no_trend_test(series: &DVector<f64>) -> Report {
 }
 
 /// returns Delta[y(t)] and y(t-1)
-fn diff(y: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>, usize) {
+fn diff<F: Scalar + RealField>(y: &DVector<F>) -> (DVector<F>, DMatrix<F>, usize) {
     let n = y.len();
 
     let y_t_1 = y.clone().remove_row(n - 1);
     let y_t = y.clone().remove_row(0);
     let delta = y_t - &y_t_1;
 
-    let y_t_1: DMatrix<f64> = DMatrix::from_row_slice(n - 1, 1, y_t_1.as_slice());
+    let y_t_1: DMatrix<F> = DMatrix::from_row_slice(n - 1, 1, y_t_1.as_slice());
 
     (delta, y_t_1, n - 1)
 }
@@ -118,12 +119,12 @@ mod tests {
     use crate::utils::gen_ar_1;
 
     #[test]
-    fn test_dickeyfuller_no_unit_root() {
+    fn test_dickeyfuller_no_unit_root_f32() {
         let n = 100;
 
         let mut rng = ChaCha8Rng::seed_from_u64(42);
 
-        let delta = 0.5;
+        let delta: f32 = 0.5;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);
@@ -137,12 +138,50 @@ mod tests {
     }
 
     #[test]
-    fn test_dickeyfuller_with_unit_root() {
+    fn test_dickeyfuller_with_unit_root_f32() {
         let n = 100;
 
         let mut rng = ChaCha8Rng::seed_from_u64(42);
 
-        let delta = 1.0;
+        let delta: f32 = 1.0;
+        let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
+
+        println!("y={}", y);
+        let report = constant_no_trend_test(&y);
+
+        let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+
+        assert!(report.test_statistic.is_some());
+        let t_stat = report.test_statistic.unwrap();
+        assert!(t_stat > critical_value);
+    }
+
+    #[test]
+    fn test_dickeyfuller_no_unit_root_f64() {
+        let n = 100;
+
+        let mut rng = ChaCha8Rng::seed_from_u64(42);
+
+        let delta: f64 = 0.5;
+        let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
+
+        println!("y={}", y);
+        let report = constant_no_trend_test(&y);
+
+        let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+
+        assert!(report.test_statistic.is_some());
+        let t_stat = report.test_statistic.unwrap();
+        assert!(t_stat < critical_value);
+    }
+
+    #[test]
+    fn test_dickeyfuller_with_unit_root_f64() {
+        let n = 100;
+
+        let mut rng = ChaCha8Rng::seed_from_u64(42);
+
+        let delta: f64 = 1.0;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
         println!("y={}", y);

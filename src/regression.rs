@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, RealField, Scalar};
+use num_traits::Float;
 
 use crate::prelude::Error;
 
 /// Returns the beta coefficients and t-statistics of the OLS regression of y on x.
 /// Note: the intercept is the first coefficient.
-pub fn ols(y: &DVector<f64>, x: &DMatrix<f64>) -> Result<(DVector<f64>, DVector<f64>), Error> {
+pub fn ols<F: Float + Scalar + RealField>(
+    y: &DVector<F>,
+    x: &DMatrix<F>,
+) -> Result<(DVector<F>, DVector<F>), Error> {
     // Augment X with a column of 1s for the intercept - in first column
     let a = x.clone();
-    let a = a.insert_column(0, 1.0);
+    let a = a.insert_column(0, F::from(1.0).unwrap());
 
     let n = x.nrows();
     let k = a.ncols();
@@ -47,10 +51,10 @@ pub fn ols(y: &DVector<f64>, x: &DMatrix<f64>) -> Result<(DVector<f64>, DVector<
     let rtr = rtr.get((0, 0)).unwrap();
 
     // The variance of the residuals
-    let vcv = ata_inv * (rtr / (n - k) as f64);
+    let vcv = ata_inv * (*rtr / F::from(n - k).unwrap());
 
     // The standard errors of the coefficients
-    let se = vcv.diagonal().map(|x| x.sqrt());
+    let se = vcv.diagonal().map(|x| Float::sqrt(x));
 
     let t_statistics = beta_.component_div(&se);
 
@@ -67,9 +71,22 @@ mod tests {
     use crate::utils::{gen_affine_data, gen_affine_data_with_whitenoise};
 
     #[test]
-    fn test_ols() {
-        let y = DVector::from_row_slice(&[1.0, 2.0, 3.0, 4.0, 5.0]);
-        let x = DMatrix::from_row_slice(5, 1, &[1.0, 2.0, 3.0, 4.0, 5.0]);
+    fn test_ols_f32() {
+        let y = DVector::from_row_slice(&[1.0f32, 2.0, 3.0, 4.0, 5.0]);
+        let x = DMatrix::from_row_slice(5, 1, &[1.0f32, 2.0, 3.0, 4.0, 5.0]);
+
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
+
+        assert_eq!(beta_hat.get(0).unwrap().to_owned(), 0.0);
+        assert_eq!(beta_hat.get(1).unwrap().to_owned(), 1.0);
+        assert!(t_stats.get(0).unwrap().is_nan());
+        assert!(t_stats.get(1).unwrap().is_infinite());
+    }
+
+    #[test]
+    fn test_ols_f64() {
+        let y = DVector::from_row_slice(&[1.0f64, 2.0, 3.0, 4.0, 5.0]);
+        let x = DMatrix::from_row_slice(5, 1, &[1.0f64, 2.0, 3.0, 4.0, 5.0]);
 
         let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
 

@@ -13,7 +13,8 @@
 // limitations under the License.
 
 //! Utilities
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, RealField, Scalar};
+use num_traits::Float;
 use rand::prelude::Distribution;
 use rand::Rng;
 use rand_distr::StandardNormal;
@@ -21,34 +22,37 @@ use rand_distr::StandardNormal;
 /// Generates AR(1) data:
 /// Y_t = mu + delta * Y_{t-1} + sigma * e_t
 /// where e_t is a standard normal random variable
-pub fn gen_ar_1<R: Rng + ?Sized>(
+pub fn gen_ar_1<R: Rng + ?Sized, F: RealField + Scalar + Float>(
     mut rng: &mut R,
     size: usize,
-    mu: f64,
-    delta: f64,
-    sigma: f64,
-) -> DVector<f64> {
+    mu: F,
+    delta: F,
+    sigma: F,
+) -> DVector<F>
+where
+    StandardNormal: Distribution<F>,
+{
     let mut y = DVector::zeros(size);
 
-    let epsilon: f64 = StandardNormal.sample(&mut rng);
-    y[0] = mu + delta * 0.0 + sigma * epsilon;
+    let epsilon: F = StandardNormal.sample(&mut rng);
+    y[0] = mu + delta * F::from(0.0).unwrap() + sigma * epsilon;
 
     for i in 1..size {
-        let epsilon: f64 = StandardNormal.sample(&mut rng);
+        let epsilon: F = StandardNormal.sample(&mut rng);
         y[i] = mu + delta * y[i - 1] + sigma * epsilon;
     }
 
     y
 }
 
-fn gen_x(sz: usize) -> DMatrix<f64> {
+fn gen_x<F: RealField + Float>(sz: usize) -> DMatrix<F> {
     DMatrix::from_row_slice(
         sz,
         1,
         Vec::from_iter(0..sz)
             .into_iter()
-            .map(|x| x as f64)
-            .collect::<Vec<f64>>()
+            .map(|x| F::from(x).unwrap())
+            .collect::<Vec<F>>()
             .as_slice(),
     )
 }
@@ -56,9 +60,13 @@ fn gen_x(sz: usize) -> DMatrix<f64> {
 /// Generate data as y = beta * x + mu
 /// where noise is drawn from a standard normal distribution
 /// Returns (x, y).
-pub fn gen_affine_data(sz: usize, mu: f64, beta: f64) -> (DMatrix<f64>, DVector<f64>) {
+pub fn gen_affine_data<F: RealField + Scalar + Float>(
+    sz: usize,
+    mu: F,
+    beta: F,
+) -> (DMatrix<F>, DVector<F>) {
     let x = gen_x(sz);
-    let y = (beta * &x).add_scalar(mu);
+    let y = (&x * beta).add_scalar(mu);
 
     let y = DVector::from_row_slice(y.as_slice());
     (x, y)
@@ -67,14 +75,17 @@ pub fn gen_affine_data(sz: usize, mu: f64, beta: f64) -> (DMatrix<f64>, DVector<
 /// Generate data as y = beta * x + mu + noise
 /// where noise is drawn from a standard normal distribution
 /// Returns (x, y).
-pub fn gen_affine_data_with_whitenoise<R: Rng + ?Sized>(
+pub fn gen_affine_data_with_whitenoise<R: Rng + ?Sized, F: RealField + Scalar + Float>(
     mut rng: &mut R,
     sz: usize,
-    mu: f64,
-    beta: f64,
-) -> (DMatrix<f64>, DVector<f64>) {
+    mu: F,
+    beta: F,
+) -> (DMatrix<F>, DVector<F>)
+where
+    StandardNormal: Distribution<F>,
+{
     let x = gen_x(sz);
-    let y = beta * x.clone();
+    let y = x.clone() * beta;
 
     let noise = DVector::from_iterator(sz, StandardNormal.sample_iter(&mut rng).take(sz));
     let y = (y + noise).add_scalar(mu);

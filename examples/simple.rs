@@ -40,7 +40,7 @@ fn main() {
 
     let t_stat = report.test_statistic.unwrap();
     println!("t-statistic: {}", t_stat);
-    assert!((t_stat - -1.472691).abs() < 1e-6);
+    assert!((t_stat - -1.472691f64).abs() < 1e-6);
     assert!(t_stat > critical_value);
     // cannot reject the hypothesis that the series is not stationary
 }
