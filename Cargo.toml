@@ -1,0 +1,28 @@
+[package]
+name = "unit-root"
+version = "0.1.0"
+edition = "2021"
+authors = ["Sebastien Soudan <sebastien.soudan@gmail.com>"]
+description = "Unit root tests"
+license = "Apache-2.0"
+categories = ["science", "mathematics", "statistics"]
+keywords = ["unit root", "Dickey-Fuller", "stationarity test"]
+homepage = "https://github.com/ssoudan/unit-root"
+repository = "https://github.com/ssoudan/unit-root"
+documentation = "https://docs.rs/unit-root"
+readme = "README.md"
+exclude = [
+    "/.github/*",
+    "/.cargo/*",
+    "/.gitignore",
+]
+
+[dependencies]
+nalgebra = "0"
+thiserror = "1"
+
+[dev-dependencies]
+rand = "0"
+rand_distr = "0"
+approx = "0"
+rand_chacha = "0"

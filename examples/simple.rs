@@ -1,13 +1,18 @@
-# Unit root tests in Rust
+// Copyright (c) 2022. Sebastien Soudan
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http:www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-![Build](https://github.com/ssoudan/unit-root/actions/workflows/rust.yml/badge.svg)
-
-Stationarity tests for time-series data. 
-It's just Dickey-Fuller yet, but it's a start. 
-
-## Usage
-
-```rust
+//! A simple example of how to use the library
 use unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value;
 use unit_root::prelude::distrib::AlphaLevel;
 use unit_root::prelude::nalgebra::DVector;
@@ -28,17 +33,14 @@ fn main() {
         -0.42968979,
     ]);
 
-    // compute the test statistic
     let report = tools::univariate_dickeyfuller(&y);
-    
-    // critical values for model 1 (constant but no trend):
+
     let critical_value = model_1_approx_critical_value(report.size, AlphaLevel::OnePercent);
     assert_eq!(report.size, 10);
 
-    // comparison
     let t_stat = report.test_statistic.unwrap();
     println!("t-statistic: {}", t_stat);
     assert!((t_stat - -1.472691).abs() < 1e-6);
     assert!(t_stat > critical_value);
+    // cannot reject the hypothesis that the series is not stationary
 }
-```
