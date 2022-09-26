@@ -46,7 +46,6 @@ pub struct Report<F> {
 /// # Examples:
 ///
 /// ```rust
-/// use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
 /// use unit_root::prelude::distrib::AlphaLevel;
 /// use unit_root::prelude::nalgebra::DVector;
 /// use unit_root::prelude::*;
@@ -67,7 +66,10 @@ pub struct Report<F> {
 ///
 /// let report = tools::dickeyfuller::constant_no_trend_test(&y);
 ///
-/// let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+/// let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
+///     report.size,
+///     AlphaLevel::OnePercent,
+/// );
 /// assert_eq!(report.size, 10);
 ///
 /// let t_stat = report.test_statistic.unwrap();
