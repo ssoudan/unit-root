@@ -64,7 +64,7 @@ pub fn ols<F: Float + Scalar + RealField>(
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
-    use nalgebra::{DMatrix, DVector};
+    use nalgebra::{DMatrix, DVector, Matrix};
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
 
@@ -145,5 +145,51 @@ mod tests {
 
         assert!(t_stat_mu > 100.);
         assert!(t_stat_beta > 100.);
+    }
+
+    #[test]
+    fn test_ols_matrix_f32() {
+        let x = DMatrix::from_row_slice(5, 1, &[1.0f32, 2.0, 3.0, 4.0, 5.0]);
+        let x2 = DMatrix::from_row_slice(5, 1, &[1.0f32, 5.0, 2.0, 2.0, 0.0]);
+
+        let beta_0 = 2.0;
+        let beta_1 = 17.0;
+        let beta_2 = 3.0;
+
+        let y = DVector::from_row_slice((&x * beta_1 + &x2 * beta_2).add_scalar(beta_0).as_slice());
+
+        let x = Matrix::from_columns(&[x.column(0), x2.column(0)]);
+
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
+
+        assert_relative_eq!(beta_hat.get(0).unwrap().to_owned(), beta_0, epsilon = 1e-3);
+        assert_relative_eq!(beta_hat.get(1).unwrap().to_owned(), beta_1, epsilon = 1e-3);
+        assert_relative_eq!(beta_hat.get(2).unwrap().to_owned(), beta_2, epsilon = 1e-3);
+        assert!(*t_stats.get(0).unwrap() > 1e3);
+        assert!(*t_stats.get(1).unwrap() > 1e3);
+        assert!(*t_stats.get(2).unwrap() > 1e3);
+    }
+
+    #[test]
+    fn test_ols_matrix_f64() {
+        let x = DMatrix::from_row_slice(5, 1, &[1.0f64, 2.0, 3.0, 4.0, 5.0]);
+        let x2 = DMatrix::from_row_slice(5, 1, &[1.0f64, 5.0, 2.0, 2.0, 0.0]);
+
+        let beta_0 = 2.0;
+        let beta_1 = 17.0;
+        let beta_2 = 3.0;
+
+        let y = DVector::from_row_slice((&x * beta_1 + &x2 * beta_2).add_scalar(beta_0).as_slice());
+
+        let x = Matrix::from_columns(&[x.column(0), x2.column(0)]);
+
+        let (beta_hat, t_stats) = super::ols(&y, &x).unwrap();
+
+        assert_relative_eq!(beta_hat.get(0).unwrap().to_owned(), beta_0, epsilon = 1e-3);
+        assert_relative_eq!(beta_hat.get(1).unwrap().to_owned(), beta_1, epsilon = 1e-3);
+        assert_relative_eq!(beta_hat.get(2).unwrap().to_owned(), beta_2, epsilon = 1e-3);
+        assert!(*t_stats.get(0).unwrap() > 1e3);
+        assert!(*t_stats.get(1).unwrap() > 1e3);
+        assert!(*t_stats.get(2).unwrap() > 1e3);
     }
 }
