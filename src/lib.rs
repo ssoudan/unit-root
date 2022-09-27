@@ -23,7 +23,7 @@
 //! use unit_root::prelude::*;
 //!
 //! let y = DVector::from_row_slice(&[
-//!     -0.89642362,
+//!     -0.89642362f64,
 //!     0.3222552,
 //!     -1.96581989,
 //!     -1.10012936,
@@ -36,18 +36,19 @@
 //!     -0.42968979,
 //! ]);
 //!
-//! let report = tools::dickeyfuller::constant_no_trend_test(&y);
+//! let lag = 2;
+//! let report = tools::adf::constant_no_trend_test(&y, lag).unwrap();
 //!
-//! let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
-//! assert_eq!(report.size, 10);
+//! let critical_value: f64 = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+//! assert_eq!(report.size, 8);
 //!
-//! let t_stat = report.test_statistic.unwrap();
+//! let t_stat = report.test_statistic;
 //! println!("t-statistic: {}", t_stat);
-//! assert!((t_stat - -1.472691f32).abs() < 1e-6);
-//! assert!(t_stat > critical_value);
+//! println!("critical_value: {}", critical_value);
 //! ```
 //!
 //! # References
+//! - [Augmented Dickey-Fuller test](https://en.wikipedia.org/wiki/Augmented_Dickey–Fuller_test)
 //! - [Dickey-Fuller test](https://en.wikipedia.org/wiki/Dickey%E2%80%93Fuller_test)
 //! - [Statsmodels](https://github.com/statsmodels/statsmodels/blob/main/statsmodels/tsa/stattools.py)
 //! - [Dickey-Fuller Test](https://www.real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/)
@@ -79,4 +80,7 @@ pub enum Error {
     /// Failed to invert matrix.
     #[error("Failed to invert matrix: {0}")]
     FailedToInvertMatrix(String),
+    /// NotEnoughSamples
+    #[error("Not enough samples")]
+    NotEnoughSamples,
 }

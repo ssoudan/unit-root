@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! A simple example of how to use the library
-use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
+//! Example of the Augmented Dickey-Fuller test
 use unit_root::prelude::distrib::AlphaLevel;
 use unit_root::prelude::nalgebra::DVector;
 use unit_root::prelude::*;
 
 fn main() {
     let y = DVector::from_row_slice(&[
-        -0.89642362,
+        -0.89642362f64,
         0.3222552,
         -1.96581989,
         -1.10012936,
@@ -33,14 +32,20 @@ fn main() {
         -0.42968979,
     ]);
 
-    let report = tools::dickeyfuller::constant_no_trend_test(&y);
+    // compute the test statistic
+    let lag = 1;
+    let report = tools::adf::constant_no_trend_test(&y, lag).unwrap();
 
-    let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
-    assert_eq!(report.size, 10);
+    // critical values for the model with a constant but no trend:
+    let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
+        report.size,
+        AlphaLevel::OnePercent,
+    );
+    assert_eq!(report.size, 9);
 
-    let t_stat = report.test_statistic.unwrap();
+    // comparison
+    let t_stat = report.test_statistic;
     println!("t-statistic: {}", t_stat);
-    assert!((t_stat - -1.472691f64).abs() < 1e-6);
+    assert!((t_stat - -1.1639935).abs() < 1e-6);
     assert!(t_stat > critical_value);
-    // cannot reject the hypothesis that the series is not stationary
 }

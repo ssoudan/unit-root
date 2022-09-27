@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nalgebra::{DMatrix, RealField, Scalar};
+use nalgebra::{RealField, Scalar};
 use num_traits::Float;
 
 use crate::prelude::nalgebra::DVector;
+use crate::prelude::tools::Report;
 use crate::regression::ols;
+use crate::tools::prepare;
+use crate::Error;
 
-/// Univariate Dickey-Fuller test report
-pub struct Report<F> {
-    /// The test statistic - when available
-    pub test_statistic: Option<F>,
-    /// The size of the sample
-    pub size: usize,
-}
-
-/// returns the t-statistic of the Dickey-Fuller test
+/// Returns the t-statistic of the Dickey-Fuller test
 /// and the size of the sample.
 ///
 /// The null hypothesis is that the series is non-stationary.
@@ -34,8 +29,8 @@ pub struct Report<F> {
 /// # Details
 ///
 /// Critical values for **model 1**  (constant, no trend): $\Delta y_t = \mu +
-/// \delta*y_{t-1} + \epsilon_i $ can obtained
-/// from `unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value`.
+/// \delta*y_{t-1} + \epsilon_i $ can obtained from
+/// `unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value`.
 ///
 /// - If $t_{stat} < \mathrm{t_{\mathrm{crit}}(\alpha)}$ then reject $H_0$ at
 /// $alpha$ significance level - and thus conclude that the series is stationary.
@@ -64,7 +59,7 @@ pub struct Report<F> {
 ///     -0.42968979,
 /// ]);
 ///
-/// let report = tools::dickeyfuller::constant_no_trend_test(&y);
+/// let report = tools::dickeyfuller::constant_no_trend_test(&y).unwrap();
 ///
 /// let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
 ///     report.size,
@@ -72,42 +67,22 @@ pub struct Report<F> {
 /// );
 /// assert_eq!(report.size, 10);
 ///
-/// let t_stat = report.test_statistic.unwrap();
+/// let t_stat = report.test_statistic;
 /// println!("t-statistic: {}", t_stat);
 /// assert!((t_stat - -1.472691f64).abs() < 1e-6);
 /// assert!(t_stat > critical_value);
 /// ```
-pub fn constant_no_trend_test<F: Float + Scalar + RealField>(series: &DVector<F>) -> Report<F> {
-    let (delta_y, y_t_1, size) = diff(series);
+pub fn constant_no_trend_test<F: Float + Scalar + RealField>(
+    series: &DVector<F>,
+) -> Result<Report<F>, Error> {
+    let (delta_y, y_t_1, size) = prepare(series, 0)?;
 
-    let (_betas, t_stats) = ols(&delta_y, &y_t_1).unwrap();
+    let (_betas, t_stats) = ols(&delta_y, &y_t_1)?;
 
-    let t_stat_beta_1 = t_stats[1];
-
-    if t_stat_beta_1.is_finite() {
-        Report {
-            test_statistic: Some(t_stat_beta_1),
-            size,
-        }
-    } else {
-        Report {
-            test_statistic: None,
-            size,
-        }
-    }
-}
-
-/// returns Delta[y(t)] and y(t-1)
-fn diff<F: Scalar + RealField>(y: &DVector<F>) -> (DVector<F>, DMatrix<F>, usize) {
-    let n = y.len();
-
-    let y_t_1 = y.clone().remove_row(n - 1);
-    let y_t = y.clone().remove_row(0);
-    let delta = y_t - &y_t_1;
-
-    let y_t_1: DMatrix<F> = DMatrix::from_row_slice(n - 1, 1, y_t_1.as_slice());
-
-    (delta, y_t_1, n - 1)
+    Ok(Report {
+        test_statistic: t_stats[1],
+        size,
+    })
 }
 
 #[cfg(test)]
@@ -129,13 +104,11 @@ mod tests {
         let delta: f32 = 0.5;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        println!("y={}", y);
-        let report = constant_no_trend_test(&y);
+        let report = constant_no_trend_test(&y).unwrap();
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
-        assert!(report.test_statistic.is_some());
-        let t_stat = report.test_statistic.unwrap();
+        let t_stat = report.test_statistic;
         assert!(t_stat < critical_value);
     }
 
@@ -148,13 +121,11 @@ mod tests {
         let delta: f32 = 1.0;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        println!("y={}", y);
-        let report = constant_no_trend_test(&y);
+        let report = constant_no_trend_test(&y).unwrap();
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
-        assert!(report.test_statistic.is_some());
-        let t_stat = report.test_statistic.unwrap();
+        let t_stat = report.test_statistic;
         assert!(t_stat > critical_value);
     }
 
@@ -167,13 +138,11 @@ mod tests {
         let delta: f64 = 0.5;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        println!("y={}", y);
-        let report = constant_no_trend_test(&y);
+        let report = constant_no_trend_test(&y).unwrap();
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
-        assert!(report.test_statistic.is_some());
-        let t_stat = report.test_statistic.unwrap();
+        let t_stat = report.test_statistic;
         assert!(t_stat < critical_value);
     }
 
@@ -186,13 +155,29 @@ mod tests {
         let delta: f64 = 1.0;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        println!("y={}", y);
-        let report = constant_no_trend_test(&y);
+        let report = constant_no_trend_test(&y).unwrap();
 
         let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
 
-        assert!(report.test_statistic.is_some());
-        let t_stat = report.test_statistic.unwrap();
+        let t_stat = report.test_statistic;
         assert!(t_stat > critical_value);
+    }
+
+    #[test]
+    fn no_enough_data() {
+        let y = DVector::from_row_slice(&[1.0]);
+        let report = constant_no_trend_test(&y);
+        assert!(report.is_err());
+    }
+
+    #[test]
+    fn test_constant_no_trend_test() {
+        let y = vec![1_f32, 3., 6., 10., 15., 21., 28., 36., 45., 55.];
+
+        let y = DVector::from(y);
+
+        let report = super::constant_no_trend_test(&y).unwrap();
+
+        assert_eq!(report.size, 9);
     }
 }
