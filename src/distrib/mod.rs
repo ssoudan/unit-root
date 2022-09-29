@@ -14,6 +14,7 @@
 pub mod dickeyfuller;
 
 /// Alpha levels
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlphaLevel {
     /// 1%
     OnePercent,
