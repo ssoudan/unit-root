@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use nalgebra::{DMatrix, DVector, RealField, Scalar};
 use num_traits::Float;
 
-use crate::Error;
+use crate::{Error, regression, distrib::Regression};
 
 // Copyright (c) 2022. Sebastien Soudan
 //
@@ -36,6 +36,7 @@ pub struct Report<F: Debug + Clone> {
 pub(crate) fn prepare<F: RealField + Scalar + Float>(
     y: &DVector<F>,
     n: usize,
+    regression: Regression
 ) -> Result<(DVector<F>, DMatrix<F>, usize), Error> {
     let y_len = y.len();
 
@@ -56,6 +57,10 @@ pub(crate) fn prepare<F: RealField + Scalar + Float>(
     // we have to remove the first n elements of delta_y.
     let delta_y_output = delta_y.clone().remove_rows(0, n);
 
+    if regression == Regression::ConstantAndTrend {
+        //time trend column
+        let tt = &y.as_slice()[n..y_len];
+    }
     // Now for the second element of the tuple, we want to build a matrix of size (y_len
     // - 1 - n) x (n + 1)
 
