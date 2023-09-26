@@ -1,3 +1,5 @@
+use std::fmt;
+
 // Copyright (c) 2022. Sebastien Soudan
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,3 +27,29 @@ pub enum AlphaLevel {
     /// 10%
     TenPercent,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Regression {
+    Constant,
+    ConstantAndTrend,
+    NoConstantNoTrend
+}
+
+
+
+#[derive(Debug)]
+pub enum CalculationError {
+    ConversionFailed,
+    // Other error variants...
+}
+
+impl std::fmt::Display for CalculationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::ConversionFailed => write!(f, "Conversion from f64 to generic float failed"),
+            // Other error variants...
+        }
+    }
+}
+
+impl std::error::Error for CalculationError {}

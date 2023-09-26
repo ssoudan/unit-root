@@ -40,7 +40,7 @@ fn main() {
     let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
         report.size,
         AlphaLevel::OnePercent,
-    );
+    ).unwrap();
     assert_eq!(report.size, 9);
 
     // comparison
