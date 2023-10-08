@@ -15,6 +15,7 @@ exclude = [
     "/.github/*",
     "/.cargo/*",
     "/.gitignore",
+    "/.devcontainer/*",
 ]
 
 [features]
