@@ -77,11 +77,12 @@ pub fn constant_trend_critical_value<F: Float>(
 /// for a given alpha level
 /// #Examples:
 /// ```rust
-/// use unit_root::prelude::distrib::{ Regression, AlphaLevel};
-/// use unit_root::prelude::distrib::dickeyfuller::get_critical_value;
 /// use approx::assert_relative_eq;
+/// use unit_root::prelude::distrib::dickeyfuller::get_critical_value;
+/// use unit_root::prelude::distrib::{AlphaLevel, Regression};
 /// let dataset_size = 25;
-/// let critical_value = get_critical_value::<f32>(Regression::Constant, dataset_size, AlphaLevel::OnePercent);
+/// let critical_value =
+///     get_critical_value::<f32>(Regression::Constant, dataset_size, AlphaLevel::OnePercent);
 /// assert_eq!(critical_value.is_ok(), true);
 /// assert_relative_eq!(critical_value.unwrap(), -3.724, epsilon = 1e-3);
 /// ```
