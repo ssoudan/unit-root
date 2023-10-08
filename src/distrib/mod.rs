@@ -32,10 +32,8 @@ pub enum AlphaLevel {
 pub enum Regression {
     Constant,
     ConstantAndTrend,
-    NoConstantNoTrend
+    NoConstantNoTrend,
 }
-
-
 
 #[derive(Debug)]
 pub enum CalculationError {

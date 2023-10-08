@@ -65,11 +65,11 @@ pub fn get_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
 ) -> Result<F, CalculationError> {
-    return match regression{
+    return match regression {
         Regression::Constant => constant_no_trend_critical_value(sz, alpha),
         Regression::ConstantAndTrend => constant_trend_critical_value(sz, alpha),
-        Regression::NoConstantNoTrend => no_constant_no_trend_critical_value(sz, alpha)
-      }
+        Regression::NoConstantNoTrend => no_constant_no_trend_critical_value(sz, alpha),
+    };
 }
 
 fn calculate_t_stat_from_estimators<F: Float>(
@@ -200,15 +200,14 @@ mod tests {
         let epsilon = 1e-3;
 
         let test_data = [
-            (AlphaLevel::OnePercent,  -4.375, 25),
+            (AlphaLevel::OnePercent, -4.375, 25),
             (AlphaLevel::TwoPointFivePercent, -3.951, 25),
             (AlphaLevel::FivePercent, -3.603, 25),
             (AlphaLevel::TenPercent, -3.238, 25),
         ];
         for (alpha, expected_value, sz) in test_data {
             assert_relative_eq!(
-                constant_trend_critical_value::<f32>(sz, alpha)
-                    .expect("failed to convert float"),
+                constant_trend_critical_value::<f32>(sz, alpha).expect("failed to convert float"),
                 expected_value,
                 epsilon = epsilon
             );
@@ -219,15 +218,23 @@ mod tests {
     fn test_get_critical_value() {
         let epsilon = 1e-3;
         let test_data = [
-            (Regression::NoConstantNoTrend, 100, AlphaLevel::TwoPointFivePercent, -2.234),
+            (
+                Regression::NoConstantNoTrend,
+                100,
+                AlphaLevel::TwoPointFivePercent,
+                -2.234,
+            ),
             (Regression::Constant, 25, AlphaLevel::OnePercent, -3.724),
-            (Regression::ConstantAndTrend, 50,  AlphaLevel::TenPercent, -3.181)
-           
+            (
+                Regression::ConstantAndTrend,
+                50,
+                AlphaLevel::TenPercent,
+                -3.181,
+            ),
         ];
-        for (regression, sz, alpha, expected_value ) in test_data {
+        for (regression, sz, alpha, expected_value) in test_data {
             assert_relative_eq!(
-                get_critical_value::<f32>(regression, sz, alpha)
-                    .expect("failed to convert float"),
+                get_critical_value::<f32>(regression, sz, alpha).expect("failed to convert float"),
                 expected_value,
                 epsilon = epsilon
             );

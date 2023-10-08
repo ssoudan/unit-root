@@ -39,7 +39,7 @@
 //! let lag = 2;
 //! let report = tools::adf::constant_no_trend_test(&y, lag).unwrap();
 //!
-//! let critical_value: f64 = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+//! let critical_value: f64 = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent).unwrap();
 //! assert_eq!(report.size, 8);
 //!
 //! let t_stat = report.test_statistic;
