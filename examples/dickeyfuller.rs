@@ -35,7 +35,8 @@ fn main() {
 
     let report = tools::dickeyfuller::constant_no_trend_test(&y).unwrap();
 
-    let critical_value = constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent);
+    let critical_value =
+        constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent).unwrap();
     assert_eq!(report.size, 10);
 
     let t_stat = report.test_statistic;
