@@ -42,7 +42,10 @@ pub mod tools {
 pub mod distrib {
     /// Dickey-Fuller distribution
     pub mod dickeyfuller {
-        pub use crate::distrib::dickeyfuller::constant_no_trend_critical_value;
+        pub use crate::distrib::dickeyfuller::{
+            constant_no_trend_critical_value, constant_trend_critical_value, get_critical_value,
+            no_constant_no_trend_critical_value,
+        };
     }
-    pub use crate::distrib::AlphaLevel;
+    pub use crate::distrib::{AlphaLevel, Regression};
 }

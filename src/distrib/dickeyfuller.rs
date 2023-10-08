@@ -18,7 +18,9 @@ use super::{AlphaLevel, CalculationError, Regression};
 
 /// Approximate Dickey-Fuller distribution for specific alpha levels
 /// for constant, no trend: $Δy_i = β_0 + β_1*y_{i-1} + ε_i$
-/// https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
+/// Source:
+/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
+/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
 pub fn constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
@@ -29,9 +31,15 @@ pub fn constant_no_trend_critical_value<F: Float>(
         AlphaLevel::FivePercent => (-2.86154, -2.86154, -4.234, -40.04),
         AlphaLevel::TenPercent => (-2.56677, -1.5384, -2.809, 0.),
     };
-    return calculate_t_stat_from_estimators(t, u, v, w, sz);
+
+    calculate_t_stat_from_estimators(t, u, v, w, sz)
 }
 
+/// Approximate Dickey-Fuller distribution for specific alpha levels
+/// for constant, no trend: $Δy_i = β_1*y_{i-1} + ε_i$
+/// Source:
+/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
+/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
 pub fn no_constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
@@ -43,9 +51,14 @@ pub fn no_constant_no_trend_critical_value<F: Float>(
         AlphaLevel::TenPercent => (-1.61682, 0.2656, -2.714, 25.364),
     };
 
-    return calculate_t_stat_from_estimators(t, u, v, w, sz);
+    calculate_t_stat_from_estimators(t, u, v, w, sz)
 }
 
+/// Approximate Dickey-Fuller distribution for specific alpha levels
+/// for constant, and trend: $Δy_i = β_0 + β_2*i + β_1*y_{i-1} + ε_i$
+/// Source:
+/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
+/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
 pub fn constant_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
@@ -57,19 +70,30 @@ pub fn constant_trend_critical_value<F: Float>(
         AlphaLevel::TenPercent => (-3.12705, -2.5856, -3.925, -22.38),
     };
 
-    return calculate_t_stat_from_estimators(t, u, v, w, sz);
+    calculate_t_stat_from_estimators(t, u, v, w, sz)
 }
 
+/// Returns the critical value for a given regression and sample size
+/// for a given alpha level
+/// #Examples:
+/// ```rust
+/// use unit_root::prelude::distrib::{get_critical_value, Regression, AlphaLevel};
+/// use approx::assert_relative_eq;
+///
+/// let critical_value = get_critical_value(Regression::Constant, 25, AlphaLevel::OnePercent);
+/// assert_eq!(critical_value.is_ok(), true);
+/// assert_relative_eq!(critical_value.unwrap(), -3.724, epsilon = 1e-3);
+/// ```
 pub fn get_critical_value<F: Float>(
     regression: Regression,
     sz: usize,
     alpha: AlphaLevel,
 ) -> Result<F, CalculationError> {
-    return match regression {
+    match regression {
         Regression::Constant => constant_no_trend_critical_value(sz, alpha),
         Regression::ConstantAndTrend => constant_trend_critical_value(sz, alpha),
         Regression::NoConstantNoTrend => no_constant_no_trend_critical_value(sz, alpha),
-    };
+    }
 }
 
 fn calculate_t_stat_from_estimators<F: Float>(

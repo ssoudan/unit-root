@@ -64,7 +64,8 @@ use crate::Error;
 /// let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
 ///     report.size,
 ///     AlphaLevel::OnePercent,
-/// ).unwrap();
+/// )
+/// .unwrap();
 /// assert_eq!(report.size, 10);
 ///
 /// let t_stat = report.test_statistic;

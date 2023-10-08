@@ -29,9 +29,13 @@ pub enum AlphaLevel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Constant and trend parameters to include in regression.
 pub enum Regression {
+    /// constant only e.g.  Δy_i = β_0 + β_1*y_{i-1} + ε_i
     Constant,
+    /// constant and trend e.g. Δy_i = β_0 + β_1*y_{i-1} + β_2*i + ε_i
     ConstantAndTrend,
+    /// no constant, no trend e.g. Δy_i = β_1*y_{i-1}  + ε_i
     NoConstantNoTrend,
 }
 
