@@ -64,7 +64,8 @@ use crate::Error;
 /// let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
 ///     report.size,
 ///     AlphaLevel::OnePercent,
-/// );
+/// )
+/// .unwrap();
 /// assert_eq!(report.size, 10);
 ///
 /// let t_stat = report.test_statistic;
@@ -106,11 +107,11 @@ mod tests {
 
         let report = constant_no_trend_test(&y).unwrap();
 
-
-        let critical_value = match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
-            Ok(v) => v,
-            Err(_) => f32::MIN 
-        };
+        let critical_value =
+            match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
+                Ok(v) => v,
+                Err(_) => f32::MIN,
+            };
 
         let t_stat = report.test_statistic;
         assert!(t_stat < critical_value);
@@ -127,10 +128,11 @@ mod tests {
 
         let report = constant_no_trend_test(&y).unwrap();
 
-        let critical_value = match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
-            Ok(v) => v,
-            Err(_) => f32::MAX 
-        };
+        let critical_value =
+            match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
+                Ok(v) => v,
+                Err(_) => f32::MAX,
+            };
 
         let t_stat = report.test_statistic;
         assert!(t_stat > critical_value);
@@ -147,10 +149,11 @@ mod tests {
 
         let report = constant_no_trend_test(&y).unwrap();
 
-        let critical_value = match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
-            Ok(v) => v,
-            Err(_) => f64::MIN 
-        };
+        let critical_value =
+            match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
+                Ok(v) => v,
+                Err(_) => f64::MIN,
+            };
 
         let t_stat = report.test_statistic;
         assert!(t_stat < critical_value);
@@ -167,10 +170,11 @@ mod tests {
 
         let report = constant_no_trend_test(&y).unwrap();
 
-        let critical_value = match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
-            Ok(v) => v,
-            Err(_) => f64::MAX 
-        };
+        let critical_value =
+            match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
+                Ok(v) => v,
+                Err(_) => f64::MAX,
+            };
 
         let t_stat = report.test_statistic;
         assert!(t_stat > critical_value);
