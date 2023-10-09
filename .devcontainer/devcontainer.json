@@ -5,6 +5,7 @@
 	"build": {
 		"context": "..",
 		"dockerfile": "./Dockerfile",
+		"cacheFrom": "ghcr.io/ssoudan/unit-root-devcontainer:latest"
 	},
 	"runArgs": [
 		"--ulimit=nofile=262144:262144"
