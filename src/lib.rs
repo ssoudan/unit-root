@@ -84,4 +84,7 @@ pub enum Error {
     /// NotEnoughSamples
     #[error("Not enough samples")]
     NotEnoughSamples,
+    /// Failed to convert float.
+    #[error("Failed to convert float")]
+    ConversionFailed,
 }

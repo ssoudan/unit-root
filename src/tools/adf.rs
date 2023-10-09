@@ -16,6 +16,7 @@
 use nalgebra::{DVector, RealField, Scalar};
 use num_traits::Float;
 
+use crate::distrib::Regression;
 use crate::prelude::tools::Report;
 use crate::regression::ols;
 use crate::{tools, Error};
@@ -28,7 +29,7 @@ pub fn constant_no_trend_test<F: RealField + Scalar + Float>(
     y: &DVector<F>,
     lag: usize,
 ) -> Result<Report<F>, Error> {
-    let (delta_y, x, size) = tools::prepare(y, lag)?;
+    let (delta_y, x, size) = tools::prepare(y, lag, Regression::Constant)?;
 
     let (_betas, t_stats) = ols(&delta_y, &x)?;
 

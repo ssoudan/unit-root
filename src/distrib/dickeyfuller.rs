@@ -14,7 +14,8 @@
 
 use num_traits::Float;
 
-use super::{AlphaLevel, CalculationError, Regression};
+use super::{AlphaLevel, Regression};
+use crate::Error;
 
 /// Approximate Dickey-Fuller distribution for specific alpha levels
 /// for constant, no trend: $Δy_i = β_0 + β_1*y_{i-1} + ε_i$
@@ -24,7 +25,7 @@ use super::{AlphaLevel, CalculationError, Regression};
 pub fn constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
-) -> Result<F, CalculationError> {
+) -> Result<F, crate::Error> {
     let (t, u, v, w) = match alpha {
         AlphaLevel::OnePercent => (-3.43035, -6.5393, -16.786, -79.433),
         AlphaLevel::TwoPointFivePercent => (-3.1175, -4.53235, -9.8824, -57.7669),
@@ -43,7 +44,7 @@ pub fn constant_no_trend_critical_value<F: Float>(
 pub fn no_constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
-) -> Result<F, CalculationError> {
+) -> Result<F, crate::Error> {
     let (t, u, v, w) = match alpha {
         AlphaLevel::OnePercent => (-2.56574, -2.2358, -3.627, 0.),
         AlphaLevel::TwoPointFivePercent => (-2.222133, -1.15384, -3.4829, 17.17265),
@@ -62,7 +63,7 @@ pub fn no_constant_no_trend_critical_value<F: Float>(
 pub fn constant_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
-) -> Result<F, CalculationError> {
+) -> Result<F, crate::Error> {
     let (t, u, v, w) = match alpha {
         AlphaLevel::OnePercent => (-3.95877, -9.0531, -28.428, -134.155),
         AlphaLevel::TwoPointFivePercent => (-3.657216, -6.488615, -17.7624, -85.32545),
@@ -90,7 +91,7 @@ pub fn get_critical_value<F: Float>(
     regression: Regression,
     sz: usize,
     alpha: AlphaLevel,
-) -> Result<F, CalculationError> {
+) -> Result<F, crate::Error> {
     match regression {
         Regression::Constant => constant_no_trend_critical_value(sz, alpha),
         Regression::ConstantAndTrend => constant_trend_critical_value(sz, alpha),
@@ -104,10 +105,10 @@ fn calculate_t_stat_from_estimators<F: Float>(
     v: f64,
     w: f64,
     sz: usize,
-) -> Result<F, CalculationError> {
+) -> Result<F, crate::Error> {
     let n = sz as f64;
     let t_stat = t + (u / n) + (v / n.powi(2)) + (w / n.powi(3));
-    let x = F::from(t_stat).ok_or(CalculationError::ConversionFailed)?;
+    let x = F::from(t_stat).ok_or(Error::ConversionFailed)?;
     Ok(x)
 }
 
