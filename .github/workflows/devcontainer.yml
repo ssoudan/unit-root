@@ -29,10 +29,3 @@ jobs:
           imageName: ghcr.io/ssoudan/unit-root-devcontainer
           cacheFrom: ghcr.io/ssoudan/unit-root-devcontainer:latest
           push: always
-      - name: Run in Devcontainer
-        uses: devcontainers/ci@v0.3
-        with:
-          cacheFrom: ghcr.io/ssoudan/unit-root-devcontainer:latest
-          push: never
-          runCmd: |
-            cargo check --all-targets --all-features --workspace
