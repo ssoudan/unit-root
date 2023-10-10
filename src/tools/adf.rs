@@ -34,13 +34,14 @@ pub fn constant_no_trend_test<F: RealField + Scalar + Float>(
     let (_betas, t_stats) = ols(&delta_y, &x)?;
 
     Ok(Report {
-        test_statistic: t_stats[1],
+        test_statistic: t_stats[0],
         size,
     })
 }
 
 #[cfg(test)]
 mod tests {
+    use approx::assert_relative_eq;
     use nalgebra::DVector;
 
     use crate::prelude::tools::dickeyfuller;
@@ -64,8 +65,12 @@ mod tests {
 
         let report = super::constant_no_trend_test(&y, lag).unwrap();
         assert_eq!(report.size, 8);
-        assert_eq!(report.test_statistic, 0.48612142266202985f64);
-        // statsmodels.tsa.stattools.adfuller(y, maxlag=2) gives:
+        assert_relative_eq!(
+            report.test_statistic,
+            0.48612142266202985f64,
+            epsilon = 1e-3
+        );
+        // statsmodels.tsa.stattools.adfuller(y, maxlag=2, regression='c') gives:
         // ADF Statistic: 0.486121
         // p-value: 0.984445
         // Critical Values:

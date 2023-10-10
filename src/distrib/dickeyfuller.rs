@@ -20,8 +20,8 @@ use crate::Error;
 /// Approximate Dickey-Fuller distribution for specific alpha levels
 /// for constant, no trend: $Δy_i = β_0 + β_1*y_{i-1} + ε_i$
 /// Source:
-/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
-/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
+/// estimation values: <https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/>
+/// equation: <https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/>
 pub fn constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
@@ -39,8 +39,8 @@ pub fn constant_no_trend_critical_value<F: Float>(
 /// Approximate Dickey-Fuller distribution for specific alpha levels
 /// for constant, no trend: $Δy_i = β_1*y_{i-1} + ε_i$
 /// Source:
-/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
-/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
+/// estimation values: <https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/>
+/// equation: <https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/>
 pub fn no_constant_no_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
@@ -58,8 +58,8 @@ pub fn no_constant_no_trend_critical_value<F: Float>(
 /// Approximate Dickey-Fuller distribution for specific alpha levels
 /// for constant, and trend: $Δy_i = β_0 + β_2*i + β_1*y_{i-1} + ε_i$
 /// Source:
-/// estimation values: https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/
-/// equation: https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/
+/// estimation values: <https://www.real-statistics.com/statistics-tables/augmented-dickey-fuller-table/>
+/// equation: <https://real-statistics.com/time-series-analysis/stochastic-processes/dickey-fuller-test/>
 pub fn constant_trend_critical_value<F: Float>(
     sz: usize,
     alpha: AlphaLevel,
