@@ -39,6 +39,21 @@ pub fn constant_no_trend_test<F: RealField + Scalar + Float>(
     })
 }
 
+pub fn adf_test<F: RealField + Scalar + Float>(
+    y: &DVector<F>,
+    lag: usize,
+    regression: Regression
+) -> Result<Report<F>, Error> {
+    let (delta_y, x, size) = tools::prepare(y, lag, regression)?;
+
+    let (_betas, t_stats) = ols(&delta_y, &x)?;
+
+    Ok(Report {
+        test_statistic: t_stats[0],
+        size,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
