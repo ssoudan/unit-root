@@ -80,7 +80,7 @@ pub fn constant_no_trend_test<F: Float + Scalar + RealField>(
     let (delta_y, y_t_1, size) = prepare(series, 0, Regression::Constant)?;
 
     let (_betas, t_stats) = ols(&delta_y, &y_t_1)?;
-   
+
     Ok(Report {
         test_statistic: t_stats[0],
         size,
