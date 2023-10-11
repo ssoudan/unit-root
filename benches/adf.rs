@@ -17,7 +17,7 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::SeedableRng;
 use unit_root::prelude::distrib::Regression;
-use unit_root::prelude::tools::adf::adf_test;
+use unit_root::prelude::tools::adf_test;
 use unit_root::utils::gen_ar_1;
 
 fn adf_benchmark_f32_2(c: &mut Criterion) {

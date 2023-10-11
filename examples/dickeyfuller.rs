@@ -33,7 +33,7 @@ fn main() {
         -0.42968979,
     ]);
 
-    let report = tools::dickeyfuller::dickeyfuller_test(&y, Regression::Constant).unwrap();
+    let report = tools::dickeyfuller_test(&y, Regression::Constant).unwrap();
 
     let critical_value =
         constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent).unwrap();

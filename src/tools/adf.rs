@@ -40,47 +40,112 @@ pub fn adf_test<F: RealField + Scalar + Float>(
     })
 }
 
+/// Comparison with statsmodels.tsa.stattools.adfuller use the following code:
+/// ```python
+/// import numpy as np
+/// import pandas as pd
+/// import statsmodels.tsa.stattools as ts
+/// pd.options.display.float_format = '{:.12g}'.format
+///
+/// def adf_test(timeseries, maxlag=None, regression="c", autolag="AIC"):
+///   print("Results of Dickey-Fuller Test:")
+///   dftest = ts.adfuller(timeseries, maxlag=maxlag, regression=regression, autolag=autolag)
+///   dfoutput = pd.Series(
+///       dftest[0:4],
+///       index=[
+///           "Test Statistic",
+///           "p-value",
+///           "#Lags Used",
+///           "Number of Observations Used",
+///       ],
+///   )
+///   for key, value in dftest[4].items():
+///       dfoutput["Critical Value (%s)" % key] = value
+///   print(dfoutput)
+///
+/// y = [-1.06714348, -1.14700339,  0.79204106, -0.05845247, -0.67476754,
+///      -0.10396661,  1.82059282, -0.51169443,  2.07712365,  1.85668086, 2.56363688]
+///
+/// adf_test(y, maxlag=2, regression='n')
+/// adf_test(y, maxlag=2, regression='c')
+/// adf_test(y, maxlag=2, regression='ct')
+/// ```
+///
+/// Note: this library does not support the `autolag` yet. Tests are using the lag from
+/// statsmodels.
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
     use nalgebra::DVector;
 
     use crate::distrib::Regression;
-    use crate::prelude::tools::dickeyfuller;
-    use crate::tools::adf::adf_test;
+    use crate::prelude::tools::{adf_test, dickeyfuller_test};
+
+    const Y: [f64; 11] = [
+        -1.06714348,
+        -1.14700339,
+        0.79204106,
+        -0.05845247,
+        -0.67476754,
+        -0.10396661,
+        1.82059282,
+        -0.51169443,
+        2.07712365,
+        1.85668086,
+        2.56363688,
+    ];
 
     #[test]
-    fn test_t_statistics() {
+    fn test_t_statistics_n() {
+        let lag = 1;
+        let y = DVector::from_row_slice(&Y[..]);
+
+        let report = adf_test(&y, lag, Regression::NoConstantNoTrend).unwrap();
+        assert_eq!(report.size, 9);
+        assert_relative_eq!(report.test_statistic, -0.417100483298f64, epsilon = 1e-9);
+        // Test Statistic                -0.417100483298
+        // p-value                        0.529851882135
+        // #Lags Used                                  1
+        // Number of Observations Used                 9
+        // Critical Value (1%)                  -2.85894
+        // Critical Value (5%)            -1.96955775034
+        // Critical Value (10%)           -1.58602219479
+    }
+
+    #[test]
+    fn test_t_statistics_c() {
         let lag = 2;
-        let y = DVector::from_row_slice(&[
-            -1.06714348,
-            -1.14700339,
-            0.79204106,
-            -0.05845247,
-            -0.67476754,
-            -0.10396661,
-            1.82059282,
-            -0.51169443,
-            2.07712365,
-            1.85668086,
-            2.56363688,
-        ]);
+        let y = DVector::from_row_slice(&Y[..]);
 
         let report = adf_test(&y, lag, Regression::Constant).unwrap();
         assert_eq!(report.size, 8);
-        assert_relative_eq!(
-            report.test_statistic,
-            0.48612142266202985f64,
-            epsilon = 1e-3
-        );
-        // statsmodels.tsa.stattools.adfuller(y, maxlag=2, regression='c') gives:
-        // ADF Statistic: 0.486121
-        // p-value: 0.984445
-        // Critical Values:
-        // 1%: -4.665
-        // 5%: -3.367
-        // 10%: -2.803
-        // usedlag= 2
+        assert_relative_eq!(report.test_statistic, 0.486121422662f64, epsilon = 1e-9);
+        // Results of Dickey-Fuller Test:
+        // Test Statistic                0.486121422662
+        // p-value                       0.984445107564
+        // #Lags Used                                 2
+        // Number of Observations Used                8
+        // Critical Value (1%)           -4.66518632812
+        // Critical Value (5%)             -3.367186875
+        // Critical Value (10%)            -2.802960625
+    }
+
+    #[test]
+    fn test_t_statistics_ct() {
+        let lag = 0;
+        let y = DVector::from_row_slice(&Y[..]);
+
+        let report = adf_test(&y, lag, Regression::ConstantAndTrend).unwrap();
+        assert_eq!(report.size, 10);
+        assert_relative_eq!(report.test_statistic, -4.20337098854f64, epsilon = 1e-9);
+        // Results of Dickey-Fuller Test:
+        // Test Statistic                  -4.20337098854
+        // p-value                       0.00442477220907
+        // #Lags Used                                   0
+        // Number of Observations Used                 10
+        // Critical Value (1%)                  -5.282515
+        // Critical Value (5%)                  -3.985264
+        // Critical Value (10%)                  -3.44724
     }
 
     #[test]
@@ -94,7 +159,7 @@ mod tests {
         let regression = Regression::Constant;
 
         let report = adf_test(&y, lag, regression).unwrap();
-        let df_report = dickeyfuller::dickeyfuller_test(&y, regression).unwrap();
+        let df_report = dickeyfuller_test(&y, regression).unwrap();
 
         assert_eq!(report.test_statistic, df_report.test_statistic);
         assert_eq!(report.size, df_report.size);

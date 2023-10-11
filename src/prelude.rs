@@ -25,17 +25,11 @@ pub use crate::Error;
 
 /// Tools
 pub mod tools {
-    pub use crate::tools::Report;
-
-    /// Dickey-Fuller test
-    pub mod dickeyfuller {
-        pub use crate::tools::dickeyfuller::dickeyfuller_test;
-    }
-
     /// Augmented Dickey-Fuller test
-    pub mod adf {
-        pub use crate::tools::adf::adf_test;
-    }
+    pub use crate::tools::adf::adf_test;
+    /// Dickey-Fuller test
+    pub use crate::tools::dickeyfuller::dickeyfuller_test;
+    pub use crate::tools::Report;
 }
 
 /// Distributions
