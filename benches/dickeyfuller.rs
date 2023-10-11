@@ -17,6 +17,7 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::SeedableRng;
 use unit_root::prelude::tools::dickeyfuller;
+use unit_root::prelude::distrib::Regression;
 use unit_root::utils::gen_ar_1;
 
 fn df_benchmark_f32(c: &mut Criterion) {
@@ -29,7 +30,7 @@ fn df_benchmark_f32(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("df_f32", size), &y, |b, y| {
-            b.iter(|| dickeyfuller::constant_no_trend_test(y))
+            b.iter(|| dickeyfuller::dickeyfuller_test(y, Regression::Constant))
         });
     }
 }
@@ -44,7 +45,7 @@ fn df_benchmark_f64(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("df_f64", size), &y, |b, y| {
-            b.iter(|| dickeyfuller::constant_no_trend_test(y))
+            b.iter(|| dickeyfuller::dickeyfuller_test(y, Regression::Constant))
         });
     }
 }
