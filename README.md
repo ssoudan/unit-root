@@ -8,8 +8,7 @@ Stationarity tests for time-series data in Rust.
 
 At the moment:
 [Dickey-Fuller test](https://en.wikipedia.org/wiki/Dickey–Fuller_test) and 
-[Augmented Dickey-Fuller test](https://en.wikipedia.org/wiki/Augmented_Dickey–Fuller_test) with a 
-constant but no trend.  
+[Augmented Dickey-Fuller test](https://en.wikipedia.org/wiki/Augmented_Dickey–Fuller_test) with no constan no trend, constant or constant and trend.
 
 ## License 
 
@@ -43,16 +42,16 @@ fn main() {
     
     // compute the test statistic
     let regression = Regression::Constant;
-    let report = tools::adf::adf_test(&y, lag, regression).unwrap();
+    let report = tools::adf_test(&y, lag, regression).unwrap();
 
     // critical values for the model with a constant but no trend:
-    let critical_value = distrib::dickeyfuller::get_critical_value(
+    let critical_value: f32 = distrib::dickeyfuller::get_critical_value(
         regression,
         report.size,
         AlphaLevel::OnePercent,
     )
     .unwrap();
-    assert_eq!(report.size, 10);
+    assert_eq!(report.size, 8);
 
     // comparison
     let t_stat = report.test_statistic;
