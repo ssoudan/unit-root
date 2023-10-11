@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use nalgebra::{DMatrix, DVector, RealField, Scalar};
 use num_traits::Float;
 
+use crate::distrib::Regression;
 use crate::Error;
 
 // Copyright (c) 2022. Sebastien Soudan
@@ -32,10 +33,11 @@ pub struct Report<F: Debug + Clone> {
 
 /// Returns Delta(y) = y - y.shift(1) and a matrix made of:
 /// - a column of y.shift(1)
-/// - n columns of Delta(y).shit(n)
+/// - n columns of Delta(y).shift(n)
 pub(crate) fn prepare<F: RealField + Scalar + Float>(
     y: &DVector<F>,
     n: usize,
+    regression: Regression,
 ) -> Result<(DVector<F>, DMatrix<F>, usize), Error> {
     let y_len = y.len();
 
@@ -78,6 +80,24 @@ pub(crate) fn prepare<F: RealField + Scalar + Float>(
         }
     }
 
+    if regression != Regression::NoConstantNoTrend {
+        // constant trend column
+        let constant = F::from(1.0).ok_or(Error::ConversionFailed)?;
+        let a = vec![constant; x.nrows()];
+        x.extend(a)
+    }
+
+    if regression == Regression::ConstantAndTrend {
+        // time trend column
+        let tt: Result<Vec<F>, crate::Error> = (1..x.nrows() + 1)
+            .map(|i| F::from(i as f64).ok_or(Error::ConversionFailed))
+            .collect();
+        match tt {
+            Ok(tt) => x.extend(tt),
+            Err(_) => return Err(Error::ConversionFailed),
+        };
+    }
+
     Ok((delta_y_output.into_owned(), x, y_len - n - 1))
 }
 
@@ -85,41 +105,156 @@ pub(crate) fn prepare<F: RealField + Scalar + Float>(
 mod tests {
     use nalgebra::{DMatrix, Matrix, Vector};
 
+    use crate::distrib::Regression;
+
     #[test]
-    fn test_prepare() {
+    fn test_prepare_constant() {
+        // Given
         let sz = 10;
         let n = 2;
 
         let y = vec![1., 3., 6., 10., 15., 21., 28., 36., 45., 55.];
         assert_eq!(y.len(), sz);
 
+        let row_count = sz - n - 1;
+        let column_count = n + 2;
+
+        let expected = DMatrix::from_row_slice(
+            row_count,
+            column_count,
+            &[
+                // y[t-1], Delta[y[t]].shift(1), Delta[y[t]].shift(2), constant
+                6., 3., 2., 1., //  row 0
+                10., 4., 3., 1., // row 1
+                15., 5., 4., 1., // row 2
+                21., 6., 5., 1., // row 3
+                28., 7., 6., 1., // row 4
+                36., 8., 7., 1., // row 5
+                45., 9., 8., 1., //  row 6
+            ],
+        );
+
         let y = Matrix::from(y);
 
-        let (delta_y, x, sz_) = super::prepare(&y, n).unwrap();
+        let regression = Regression::Constant;
 
+        // When
+        let (delta_y, x, sz_) = super::prepare(&y, n, regression).unwrap();
+
+        // Expected
         assert_eq!(sz_, sz - n - 1);
 
         // Delta[y[t]] = y[t] - y[t-1]
         assert_eq!(delta_y, Vector::from(vec![4., 5., 6., 7., 8., 9., 10.]));
 
-        assert_eq!(x.shape(), (sz - n - 1, n + 1));
+        assert_eq!(
+            x.shape(),
+            (row_count, column_count),
+            "The shape of x was not as expected"
+        );
+        assert_eq!(
+            x, expected,
+            "The output matrix x did not match the expected result"
+        );
+    }
+
+    #[test]
+    fn test_prepare_constant_and_trend() {
+        // Given
+        let sz = 10;
+        let n = 2;
+
+        let y = vec![1., 3., 6., 10., 15., 21., 28., 36., 45., 55.];
+        assert_eq!(y.len(), sz);
+
+        let row_count = sz - n - 1;
+        let column_count = n + 3;
+
+        let expected = DMatrix::from_row_slice(
+            row_count,
+            column_count,
+            &[
+                // y[t-1], Delta[y[t]].shift(1), Delta[y[t]].shift(2), constant, time trend
+                6., 3., 2., 1., 1., //  row 0
+                10., 4., 3., 1., 2., // row 1
+                15., 5., 4., 1., 3., // row 2
+                21., 6., 5., 1., 4., // row 3
+                28., 7., 6., 1., 5., // row 4
+                36., 8., 7., 1., 6., // row 5
+                45., 9., 8., 1., 7., //  row 6
+            ],
+        );
+
+        let y = Matrix::from(y);
+
+        let regression = Regression::ConstantAndTrend;
+
+        // When
+        let (delta_y, x, sz_) = super::prepare(&y, n, regression).unwrap();
+
+        // Expected
+        assert_eq!(sz_, sz - n - 1);
+
+        // Delta[y[t]] = y[t] - y[t-1]
+        assert_eq!(delta_y, Vector::from(vec![4., 5., 6., 7., 8., 9., 10.]));
 
         assert_eq!(
-            x,
-            DMatrix::from_row_slice(
-                sz - n - 1,
-                n + 1,
-                &[
-                    // y[t-1], Delta[y[t]].shift(1), Delta[y[t]].shift(2)
-                    6., 3., 2., //  row 0
-                    10., 4., 3., // row 1
-                    15., 5., 4., // row 2
-                    21., 6., 5., // row 3
-                    28., 7., 6., // row 4
-                    36., 8., 7., // row 5
-                    45., 9., 8. //  row 6
-                ],
-            )
+            x.shape(),
+            (row_count, column_count),
+            "The shape of x was not as expected"
+        );
+        assert_eq!(
+            x, expected,
+            "The output matrix x did not match the expected result"
+        );
+    }
+
+    #[test]
+    fn test_prepare_no_constant_no_trend() {
+        // Given
+        let sz = 10;
+        let n = 2;
+
+        let y = vec![1., 3., 6., 10., 15., 21., 28., 36., 45., 55.];
+        assert_eq!(y.len(), sz);
+
+        let row_count = sz - n - 1;
+        let column_count = n + 1;
+
+        let expected = DMatrix::from_row_slice(
+            row_count,
+            column_count,
+            &[
+                // y[t-1], Delta[y[t]].shift(1), Delta[y[t]].shift(2)
+                6., 3., 2., //  row 0
+                10., 4., 3., // row 1
+                15., 5., 4., // row 2
+                21., 6., 5., // row 3
+                28., 7., 6., // row 4
+                36., 8., 7., // row 5
+                45., 9., 8., //  row 6
+            ],
+        );
+
+        let y = Matrix::from(y);
+        let regression = Regression::NoConstantNoTrend;
+
+        // When
+        let (delta_y, x, sz_) = super::prepare(&y, n, regression).unwrap();
+
+        // Expected
+        assert_eq!(sz_, sz - n - 1);
+
+        // Delta[y[t]] = y[t] - y[t-1]
+        assert_eq!(delta_y, Vector::from(vec![4., 5., 6., 7., 8., 9., 10.]));
+        assert_eq!(
+            x.shape(),
+            (row_count, column_count),
+            "The shape of x was not as expected"
+        );
+        assert_eq!(
+            x, expected,
+            "The output matrix x did not match the expected result"
         );
     }
 
@@ -131,7 +266,7 @@ mod tests {
 
         let y = Matrix::from(y);
 
-        let res = super::prepare(&y, n);
+        let res = super::prepare(&y, n, Regression::Constant);
         assert!(res.is_err());
     }
 
@@ -143,7 +278,7 @@ mod tests {
 
         let y = Matrix::from(y);
 
-        let res = super::prepare(&y, n);
+        let res = super::prepare(&y, n, Regression::Constant);
         assert!(res.is_err());
     }
 
@@ -155,7 +290,7 @@ mod tests {
 
         let y = Matrix::from(y);
 
-        let res = super::prepare(&y, n);
+        let res = super::prepare(&y, n, Regression::Constant);
         assert!(res.is_err());
     }
 
@@ -167,7 +302,7 @@ mod tests {
 
         let y = Matrix::from(y);
 
-        let res = super::prepare(&y, n);
+        let res = super::prepare(&y, n, Regression::Constant);
         assert!(res.is_err());
     }
 
@@ -179,7 +314,7 @@ mod tests {
 
         let y = Matrix::from(y);
 
-        let res = super::prepare(&y, n);
+        let res = super::prepare(&y, n, Regression::Constant);
         assert!(res.is_err());
     }
 }
