@@ -42,7 +42,7 @@ pub fn constant_no_trend_test<F: RealField + Scalar + Float>(
 pub fn adf_test<F: RealField + Scalar + Float>(
     y: &DVector<F>,
     lag: usize,
-    regression: Regression
+    regression: Regression,
 ) -> Result<Report<F>, Error> {
     let (delta_y, x, size) = tools::prepare(y, lag, regression)?;
 

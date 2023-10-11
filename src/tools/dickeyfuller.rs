@@ -18,7 +18,7 @@ use num_traits::Float;
 use crate::distrib::Regression;
 use crate::prelude::nalgebra::DVector;
 use crate::prelude::tools::Report;
-use crate::regression::{ols, self};
+use crate::regression::{self, ols};
 use crate::tools::prepare;
 use crate::Error;
 
@@ -89,7 +89,7 @@ pub fn constant_no_trend_test<F: Float + Scalar + RealField>(
 
 pub fn dickeyfuller_test<F: Float + Scalar + RealField>(
     series: &DVector<F>,
-    regression: Regression
+    regression: Regression,
 ) -> Result<Report<F>, Error> {
     let (delta_y, y_t_1, size) = prepare(series, 0, regression)?;
 
