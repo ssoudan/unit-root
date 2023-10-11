@@ -16,8 +16,8 @@
 #![allow(missing_docs)]
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::SeedableRng;
-use unit_root::prelude::tools::dickeyfuller;
 use unit_root::prelude::distrib::Regression;
+use unit_root::prelude::tools::dickeyfuller;
 use unit_root::utils::gen_ar_1;
 
 fn df_benchmark_f32(c: &mut Criterion) {
