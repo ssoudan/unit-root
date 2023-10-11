@@ -16,26 +16,30 @@ exclude = [
     "/.cargo/*",
     "/.gitignore",
     "/.devcontainer/*",
+    "/.vscode/*",
+    "/.git/*",
+    "/.idea/*",
+    "/venv/*",
 ]
 
 [features]
 default = []
-unstable = [ "rand", "rand_distr"]
+unstable = ["rand", "rand_distr"]
 
 [[bench]]
 name = "ols"
 harness = false
-required-features = [ "unstable" ]
+required-features = ["unstable"]
 
 [[bench]]
 name = "dickeyfuller"
 harness = false
-required-features = [ "unstable" ]
+required-features = ["unstable"]
 
 [[bench]]
 name = "adf"
 harness = false
-required-features = [ "unstable" ]
+required-features = ["unstable"]
 
 [dependencies]
 nalgebra = "0"
