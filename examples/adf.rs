@@ -38,12 +38,9 @@ fn main() {
     let report = tools::adf::adf_test(&y, lag, regression).unwrap();
 
     // critical values for the model with a constant but no trend:
-    let critical_value = distrib::dickeyfuller::get_critical_value(
-        regression,
-        report.size,
-        AlphaLevel::OnePercent,
-    )
-    .unwrap();
+    let critical_value =
+        distrib::dickeyfuller::get_critical_value(regression, report.size, AlphaLevel::OnePercent)
+            .unwrap();
     assert_eq!(report.size, 9);
 
     // comparison
