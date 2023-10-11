@@ -3,3 +3,5 @@
 Cargo.lock
 .vscode
 BUILD.sh
+venv/
+test.ipynb

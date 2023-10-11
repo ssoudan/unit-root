@@ -35,7 +35,7 @@ fn main() {
     // compute the test statistic
     let lag = 1;
     let regression = Regression::Constant;
-    let report = tools::adf::adf_test(&y, lag, regression).unwrap();
+    let report = tools::adf_test(&y, lag, regression).unwrap();
 
     // critical values for the model with a constant but no trend:
     let critical_value =
