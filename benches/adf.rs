@@ -31,7 +31,7 @@ fn adf_benchmark_f32_2(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f32_2", size), &y, |b, y| {
-            b.iter(|| adf_test(&y, lag, Regression::Constant))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -47,7 +47,7 @@ fn adf_benchmark_f64_2(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f64_2", size), &y, |b, y| {
-            b.iter(|| adf_test(&y, lag, Regression::Constant))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -63,7 +63,7 @@ fn adf_benchmark_f32_10(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f32_10", size), &y, |b, y| {
-            b.iter(|| adf_test(&y, lag, Regression::Constant))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -79,7 +79,7 @@ fn adf_benchmark_f64_10(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f64_10", size), &y, |b, y| {
-            b.iter(|| adf_test(&y, lag, Regression::Constant))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
