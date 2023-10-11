@@ -17,9 +17,10 @@
 //! # Examples
 //!
 //! ```rust
-//! use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
-//! use unit_root::prelude::distrib::AlphaLevel;
+//! use unit_root::prelude::distrib::dickeyfuller::get_critical_value;
+//! use unit_root::prelude::distrib::{AlphaLevel, Regression};
 //! use unit_root::prelude::nalgebra::DVector;
+//! use unit_root::prelude::tools::adf::adf_test;
 //! use unit_root::prelude::*;
 //!
 //! let y = DVector::from_row_slice(&[
@@ -37,10 +38,11 @@
 //! ]);
 //!
 //! let lag = 2;
-//! let report = tools::adf::constant_no_trend_test(&y, lag).unwrap();
+//! let regression = Regression::Constant;
+//! let report = adf_test(&y, lag, regression).unwrap();
 //!
 //! let critical_value: f64 =
-//!     constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent).unwrap();
+//!     get_critical_value(regression, report.size, AlphaLevel::OnePercent).unwrap();
 //! assert_eq!(report.size, 8);
 //!
 //! let t_stat = report.test_statistic;

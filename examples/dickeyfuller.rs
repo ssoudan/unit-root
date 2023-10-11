@@ -14,7 +14,7 @@
 
 //! A simple example of how to use the library
 use unit_root::prelude::distrib::dickeyfuller::constant_no_trend_critical_value;
-use unit_root::prelude::distrib::AlphaLevel;
+use unit_root::prelude::distrib::{AlphaLevel, Regression};
 use unit_root::prelude::nalgebra::DVector;
 use unit_root::prelude::*;
 
@@ -33,7 +33,7 @@ fn main() {
         -0.42968979,
     ]);
 
-    let report = tools::dickeyfuller::constant_no_trend_test(&y).unwrap();
+    let report = tools::dickeyfuller::dickeyfuller_test(&y, Regression::Constant).unwrap();
 
     let critical_value =
         constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent).unwrap();

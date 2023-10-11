@@ -29,12 +29,12 @@ pub mod tools {
 
     /// Dickey-Fuller test
     pub mod dickeyfuller {
-        pub use crate::tools::dickeyfuller::constant_no_trend_test;
+        pub use crate::tools::dickeyfuller::dickeyfuller_test;
     }
 
     /// Augmented Dickey-Fuller test
     pub mod adf {
-        pub use crate::tools::adf::constant_no_trend_test;
+        pub use crate::tools::adf::adf_test;
     }
 }
 

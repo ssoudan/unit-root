@@ -29,9 +29,8 @@ use crate::Error;
 ///
 /// # Details
 ///
-/// Critical values for **model 1**  (constant, no trend): $\Delta y_t = \mu +
-/// \delta*y_{t-1} + \epsilon_i $ can obtained from
-/// `unit_root::prelude::distrib::dickeyfuller::model_1_approx_critical_value`.
+/// Critical values for can obtained from
+/// `unit_root::prelude::distrib::dickeyfuller::get_critical_value`.
 ///
 /// - If $t_{stat} < \mathrm{t_{\mathrm{crit}}(\alpha)}$ then reject $H_0$ at
 /// $alpha$ significance level - and thus conclude that the series is stationary.
@@ -42,7 +41,7 @@ use crate::Error;
 /// # Examples:
 ///
 /// ```rust
-/// use unit_root::prelude::distrib::AlphaLevel;
+/// use unit_root::prelude::distrib::{AlphaLevel, Regression};
 /// use unit_root::prelude::nalgebra::DVector;
 /// use unit_root::prelude::*;
 ///
@@ -60,13 +59,13 @@ use crate::Error;
 ///     -0.42968979,
 /// ]);
 ///
-/// let report = tools::dickeyfuller::constant_no_trend_test(&y).unwrap();
+/// let regression = Regression::Constant;
 ///
-/// let critical_value = distrib::dickeyfuller::constant_no_trend_critical_value(
-///     report.size,
-///     AlphaLevel::OnePercent,
-/// )
-/// .unwrap();
+/// let report = tools::dickeyfuller::dickeyfuller_test(&y, regression).unwrap();
+///
+/// let critical_value =
+///     distrib::dickeyfuller::get_critical_value(regression, report.size, AlphaLevel::OnePercent)
+///         .unwrap();
 /// assert_eq!(report.size, 10);
 ///
 /// let t_stat = report.test_statistic;
@@ -74,10 +73,11 @@ use crate::Error;
 /// assert!((t_stat - -1.472691f64).abs() < 1e-6);
 /// assert!(t_stat > critical_value);
 /// ```
-pub fn constant_no_trend_test<F: Float + Scalar + RealField>(
+pub fn dickeyfuller_test<F: Float + Scalar + RealField>(
     series: &DVector<F>,
+    regression: Regression,
 ) -> Result<Report<F>, Error> {
-    let (delta_y, y_t_1, size) = prepare(series, 0, Regression::Constant)?;
+    let (delta_y, y_t_1, size) = prepare(series, 0, regression)?;
 
     let (_betas, t_stats) = ols(&delta_y, &y_t_1)?;
 
@@ -106,7 +106,7 @@ mod tests {
         let delta: f32 = 0.5;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        let report = constant_no_trend_test(&y).unwrap();
+        let report = dickeyfuller_test(&y, Regression::Constant).unwrap();
 
         let critical_value =
             match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
@@ -127,7 +127,7 @@ mod tests {
         let delta: f32 = 1.0;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        let report = constant_no_trend_test(&y).unwrap();
+        let report = dickeyfuller_test(&y, Regression::Constant).unwrap();
 
         let critical_value =
             match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
@@ -148,7 +148,7 @@ mod tests {
         let delta: f64 = 0.5;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        let report = constant_no_trend_test(&y).unwrap();
+        let report = dickeyfuller_test(&y, Regression::Constant).unwrap();
 
         let critical_value =
             match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
@@ -169,7 +169,7 @@ mod tests {
         let delta: f64 = 1.0;
         let y = gen_ar_1(&mut rng, n, 0.0, delta, 1.0);
 
-        let report = constant_no_trend_test(&y).unwrap();
+        let report = dickeyfuller_test(&y, Regression::Constant).unwrap();
 
         let critical_value =
             match constant_no_trend_critical_value(report.size, AlphaLevel::OnePercent) {
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn no_enough_data() {
         let y = DVector::from_row_slice(&[1.0]);
-        let report = constant_no_trend_test(&y);
+        let report = dickeyfuller_test(&y, Regression::Constant);
         assert!(report.is_err());
     }
 
@@ -194,7 +194,7 @@ mod tests {
 
         let y = DVector::from(y);
 
-        let report = super::constant_no_trend_test(&y).unwrap();
+        let report = dickeyfuller_test(&y, Regression::Constant).unwrap();
 
         assert_eq!(report.size, 9);
     }

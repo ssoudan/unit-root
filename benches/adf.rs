@@ -16,7 +16,8 @@
 #![allow(missing_docs)]
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::SeedableRng;
-use unit_root::prelude::tools::adf;
+use unit_root::prelude::distrib::Regression;
+use unit_root::prelude::tools::adf::adf_test;
 use unit_root::utils::gen_ar_1;
 
 fn adf_benchmark_f32_2(c: &mut Criterion) {
@@ -30,7 +31,7 @@ fn adf_benchmark_f32_2(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f32_2", size), &y, |b, y| {
-            b.iter(|| adf::constant_no_trend_test(y, lag))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -46,7 +47,7 @@ fn adf_benchmark_f64_2(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f64_2", size), &y, |b, y| {
-            b.iter(|| adf::constant_no_trend_test(y, lag))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -62,7 +63,7 @@ fn adf_benchmark_f32_10(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f32_10", size), &y, |b, y| {
-            b.iter(|| adf::constant_no_trend_test(y, lag))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }
@@ -78,7 +79,7 @@ fn adf_benchmark_f64_10(c: &mut Criterion) {
         let y = gen_ar_1(&mut rng, *size, mu, delta, sigma);
 
         c.bench_with_input(BenchmarkId::new("adf_f64_10", size), &y, |b, y| {
-            b.iter(|| adf::constant_no_trend_test(y, lag))
+            b.iter(|| adf_test(y, lag, Regression::Constant))
         });
     }
 }

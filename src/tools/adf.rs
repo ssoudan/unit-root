@@ -25,11 +25,12 @@ use crate::{tools, Error};
 /// - Constant and no trend model
 /// - Fixed lag
 /// - y must have strictly more than n + 1 elements.
-pub fn constant_no_trend_test<F: RealField + Scalar + Float>(
+pub fn adf_test<F: RealField + Scalar + Float>(
     y: &DVector<F>,
     lag: usize,
+    regression: Regression,
 ) -> Result<Report<F>, Error> {
-    let (delta_y, x, size) = tools::prepare(y, lag, Regression::Constant)?;
+    let (delta_y, x, size) = tools::prepare(y, lag, regression)?;
 
     let (_betas, t_stats) = ols(&delta_y, &x)?;
 
@@ -44,7 +45,9 @@ mod tests {
     use approx::assert_relative_eq;
     use nalgebra::DVector;
 
+    use crate::distrib::Regression;
     use crate::prelude::tools::dickeyfuller;
+    use crate::tools::adf::adf_test;
 
     #[test]
     fn test_t_statistics() {
@@ -63,7 +66,7 @@ mod tests {
             2.56363688,
         ]);
 
-        let report = super::constant_no_trend_test(&y, lag).unwrap();
+        let report = adf_test(&y, lag, Regression::Constant).unwrap();
         assert_eq!(report.size, 8);
         assert_relative_eq!(
             report.test_statistic,
@@ -88,8 +91,10 @@ mod tests {
 
         let y = DVector::from(y);
 
-        let report = super::constant_no_trend_test(&y, lag).unwrap();
-        let df_report = dickeyfuller::constant_no_trend_test(&y).unwrap();
+        let regression = Regression::Constant;
+
+        let report = adf_test(&y, lag, regression).unwrap();
+        let df_report = dickeyfuller::dickeyfuller_test(&y, regression).unwrap();
 
         assert_eq!(report.test_statistic, df_report.test_statistic);
         assert_eq!(report.size, df_report.size);
