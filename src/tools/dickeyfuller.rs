@@ -33,10 +33,10 @@ use crate::Error;
 /// `unit_root::prelude::distrib::dickeyfuller::get_critical_value`.
 ///
 /// - If $t_{stat} < \mathrm{t_{\mathrm{crit}}(\alpha)}$ then reject $H_0$ at
-/// $alpha$ significance level - and thus conclude that the series is stationary.
+///     $alpha$ significance level - and thus conclude that the series is stationary.
 /// - If $t_{stat} > \mathrm{t_{\mathrm{crit}}(\alpha)}$ then fail to reject $H_0$ at
-/// $alpha$ significance level - and thus conclude we cannot reject the hypothesis that
-/// the series is not stationary.
+///     $alpha$ significance level - and thus conclude we cannot reject the hypothesis that
+///     the series is not stationary.
 ///
 /// # Examples:
 ///
